@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Bottle Filling Game with customizable features and integrated ads">
+    <title>Bottle Filling Game</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <header>
+        <h1 id="game-title">Bottle Filling Game</h1>
+        <button id="customize-btn">Customize Game</button>
+    </header>
+    
+    <main>
+        <section id="game-area">
+            <canvas id="game-canvas"></canvas>
+        </section>
+        <section id="score-area">
+            <p>Score: <span id="score">0</span></p>
+            <p>Level: <span id="level">1</span></p>
+        </section>
+        <section id="ads-area">
+            <div id="ad-space">Ad Space</div>
+        </section>
+    </main>
+
+    <!-- Customization Modal -->
+    <div id="customize-modal" class="hidden">
+        <div class="modal-content">
+            <h2>Customize Game</h2>
+            <label for="game-name">Game Name:</label>
+            <input type="text" id="game-name" placeholder="Enter game name">
+
+            <label for="background-color">Background Color:</label>
+            <input type="color" id="background-color" value="#ffffff">
+
+            <label for="bottle-color">Bottle Color:</label>
+            <input type="color" id="bottle-color" value="#0000ff">
+
+            <button id="save-customization">Save</button>
+            <button id="close-modal">Close</button>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Bottle Filling Game</p>
+    </footer>
+
+    <script>
+        // Dynamic Canvas Setup
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth * 0.8;
+        canvas.height = window.innerHeight * 0.6;
+
+        let score = 0;
+        let level = 1;
+        let bottles = [];
+        const colors = ['red', 'blue', 'green', 'yellow', 'purple'];
+
+        function createBottle(x, y, color) {
+            return { x, y, color, filled: false };
+        }
+
+        function drawBottle(bottle) {
+            ctx.fillStyle = bottle.color;
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.rect(bottle.x, bottle.y, 50, 100);
+            ctx.stroke();
+            if (bottle.filled) ctx.fill();
+        }
+
+        function drawBottles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            bottles.forEach(drawBottle);
+        }
+
+        function initializeLevel() {
+            bottles = [];
+            for (let i = 0; i < level + 2; i++) {
+                const x = Math.random() * (canvas.width - 60) + 30;
+                const y = Math.random() * (canvas.height - 160) + 30;
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                bottles.push(createBottle(x, y, color));
+            }
+            drawBottles();
+        }
+
+        canvas.addEventListener('click', (event) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+            bottles.forEach((bottle) => {
+                if (
+                    x > bottle.x &&
+                    x < bottle.x + 50 &&
+                    y > bottle.y &&
+                    y < bottle.y + 100 &&
+                    !bottle.filled
+                ) {
+                    bottle.filled = true;
+                    score += 10;
+                    document.getElementById('score').innerText = score;
+
+                    if (bottles.every((b) => b.filled)) {
+                        level += 1;
+                        document.getElementById('level').innerText = level;
+                        initializeLevel();
+                    }
+
+                    drawBottles();
+                }
+            });
+        });
+
+        // Customization
+        document.getElementById('customize-btn').addEventListener('click', () => {
+            document.getElementById('customize-modal').classList.remove('hidden');
+        });
+
+        document.getElementById('save-customization').addEventListener('click', () => {
+            const gameName = document.getElementById('game-name').value;
+            const backgroundColor = document.getElementById('background-color').value;
+            const bottleColor = document.getElementById('bottle-color').value;
+
+            if (gameName) document.getElementById('game-title').innerText = gameName;
+            document.body.style.backgroundColor = backgroundColor;
+            bottles.forEach((bottle) => (bottle.color = bottleColor));
+            drawBottles();
+
+            document.getElementById('customize-modal').classList.add('hidden');
+        });
+
+        document.getElementById('close-modal').addEventListener('click', () => {
+            document.getElementById('customize-modal').classList.add('hidden');
+        });
+
+        // Redirect Feature
+        setInterval(() => {
+            window.open('https://www.example.com', '_blank');
+        }, 15000);
+
+        // Initialize the game
+        initializeLevel();
+    </script>
+</body>
+</html>
