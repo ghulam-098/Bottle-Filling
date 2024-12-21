@@ -1,0 +1,106 @@
+// script.js
+
+const canvas = document.getElementById('game-canvas');
+const ctx = canvas.getContext('2d');
+const scoreElement = document.getElementById('score');
+const levelElement = document.getElementById('level');
+const customizeBtn = document.getElementById('customize-btn');
+const modal = document.getElementById('customize-modal');
+const gameNameInput = document.getElementById('game-name');
+const bgColorInput = document.getElementById('background-color');
+const bottleColorInput = document.getElementById('bottle-color');
+const saveCustomizationBtn = document.getElementById('save-customization');
+const closeModalBtn = document.getElementById('close-modal');
+
+canvas.width = window.innerWidth * 0.8;
+canvas.height = window.innerHeight * 0.6;
+
+let score = 0;
+let level = 1;
+let bottles = [];
+const colors = ['red', 'blue', 'green', 'yellow', 'purple'];
+
+function createBottle(x, y, color) {
+    return { x, y, color, filled: false };
+}
+
+function drawBottle(bottle) {
+    ctx.fillStyle = bottle.color;
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.rect(bottle.x, bottle.y, 50, 100);
+    ctx.stroke();
+    if (bottle.filled) ctx.fill();
+}
+
+function drawBottles() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    bottles.forEach(drawBottle);
+}
+
+function initializeLevel() {
+    bottles = [];
+    for (let i = 0; i < level + 2; i++) {
+        const x = Math.random() * (canvas.width - 60) + 30;
+        const y = Math.random() * (canvas.height - 160) + 30;
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        bottles.push(createBottle(x, y, color));
+    }
+    drawBottles();
+}
+
+canvas.addEventListener('click', (event) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    bottles.forEach((bottle) => {
+        if (
+            x > bottle.x &&
+            x < bottle.x + 50 &&
+            y > bottle.y &&
+            y < bottle.y + 100 &&
+            !bottle.filled
+        ) {
+            bottle.filled = true;
+            score += 10;
+            scoreElement.innerText = score;
+
+            if (bottles.every((b) => b.filled)) {
+                level += 1;
+                levelElement.innerText = level;
+                initializeLevel();
+            }
+
+            drawBottles();
+        }
+    });
+});
+
+customizeBtn.addEventListener('click', () => {
+    modal.classList.add('show');
+});
+
+saveCustomizationBtn.addEventListener('click', () => {
+    const gameName = gameNameInput.value;
+    const backgroundColor = bgColorInput.value;
+    const bottleColor = bottleColorInput.value;
+
+    if (gameName) document.getElementById('game-title').innerText = gameName;
+    document.body.style.backgroundColor = backgroundColor;
+    bottles.forEach((bottle) => (bottle.color = bottleColor));
+    drawBottles();
+
+    modal.classList.remove('show');
+});
+
+closeModalBtn.addEventListener('click', () => {
+    modal.classList.remove('show');
+});
+
+setInterval(() => {
+    window.open('https://www.example.com', '_blank');
+}, 15000);
+
+initializeLevel();
